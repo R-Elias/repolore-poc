@@ -34,7 +34,7 @@ If RepoLore is missing, incomplete, or stale, improve it only where doing so is 
 
 Do not invent certainty. If something is inferred but not confirmed, say so explicitly.
 
-## 3. Structure
+## 3. RepoLore Structure
 
 RepoLore lives in `.repolore/`.
 
@@ -45,28 +45,27 @@ The minimum structure is:
   method.md
   root.md
   tree/
+  sparse-tree/
+  tools/
 ```
 
-`method.md` defines how RepoLore must be used and maintained.
+`method.md` defines this method.
 
-`root.md` describes the repository as a whole. It is the main entry point for understanding the project.
+`root.md` is the root of the knowledge base. It describes the repository as a whole and explains where agents should start depending on what they want to do.
 
-`tree/` mirrors the repository structure.
+`tree/` is the complete structural mirror of the repository.
 
-The RepoLore tree is structurally complete but knowledge-sparse.
+`sparse-tree/` is a generated read-optimized view containing only non-empty knowledge nodes.
 
-This means:
-
-* repository paths may have corresponding RepoLore nodes;
-* most nodes may be empty or minimal;
-* only useful levels contain real knowledge;
-* knowledge should live at the level where it helps future work.
-
-Structural completeness does not imply documentation completeness.
+`tools/` describes and contains simple helper tools for maintaining and reading RepoLore.
 
 ## 4. Root File
 
-`.repolore/root.md` should explain:
+`.repolore/root.md` is not the root of the repository tree.
+
+It is the root of the RepoLore knowledge base.
+
+It should explain:
 
 * what this repository is;
 * its main purpose;
@@ -76,7 +75,7 @@ Structural completeness does not imply documentation completeness.
 * where important RepoLore knowledge currently exists;
 * known uncertainty or missing knowledge.
 
-`root.md` should act as a task-oriented map, not as a full project manual.
+`root.md` should act as a task-oriented map.
 
 Prefer:
 
@@ -93,34 +92,100 @@ This folder contains files.
 
 unless that information is useful for future work.
 
-## 5. Tree Mirror
+## 5. Complete Tree Mirror
 
 `.repolore/tree/` mirrors the repository’s file and directory structure.
 
-The mirror exists so that agents can navigate knowledge using repository paths.
+The mirror is structurally complete but knowledge-sparse.
 
-For example:
+This means:
+
+* repository paths have corresponding RepoLore nodes;
+* most nodes may be empty or minimal;
+* only useful levels contain real knowledge;
+* knowledge should live at the level where it helps future work.
+
+Structural completeness does not imply documentation completeness.
+
+## 6. Tree Naming Convention
+
+For a repository directory, the corresponding RepoLore file lives inside the mirrored directory and has the same name as that directory.
+
+Example:
 
 ```text
-src/services/payment/stripe.ts
+repo:
+  API/
+    Controllers/
+      UserController.cs
 ```
 
-may correspond to:
+RepoLore mirror:
 
 ```text
-.repolore/tree/src.md
-.repolore/tree/src/services.md
-.repolore/tree/src/services/payment.md
-.repolore/tree/src/services/payment/stripe.ts.md
+.repolore/
+  tree/
+    API/
+      API.md
+      Controllers/
+        Controllers.md
+        UserController.cs.md
 ```
 
-Not all of these files need meaningful content.
+So:
 
-A node may be empty, minimal, or rich.
+```text
+API/
+→ .repolore/tree/API/API.md
+```
 
-Use rich knowledge only where it adds value.
+and:
 
-## 6. Reading Before Work
+```text
+API/Controllers/
+→ .repolore/tree/API/Controllers/Controllers.md
+```
+
+For repository files, append `.md` to the original filename:
+
+```text
+API/Controllers/UserController.cs
+→ .repolore/tree/API/Controllers/UserController.cs.md
+```
+
+## 7. Sparse Tree
+
+`.repolore/sparse-tree/` is a generated view of `.repolore/tree/`.
+
+It contains only RepoLore nodes that contain useful knowledge.
+
+Agents should prefer reading `sparse-tree/` when they need to discover where knowledge exists.
+
+Agents must not manually edit `.repolore/sparse-tree/`.
+
+All human or agent-authored knowledge must be written to `.repolore/tree/`.
+
+The sparse tree can always be deleted and regenerated from `.repolore/tree/`.
+
+## 8. Empty Nodes
+
+An empty RepoLore node is allowed.
+
+It means:
+
+> This path exists structurally, but no useful operational knowledge has been recorded here yet.
+
+A node may be physically empty or contain only:
+
+```text
+<!-- repolore:empty -->
+```
+
+Do not fill empty nodes just to make the tree look complete.
+
+Fill a node only when the knowledge would help future agents or maintainers.
+
+## 9. Reading Before Work
 
 Before modifying or deeply analyzing an area, read RepoLore first.
 
@@ -135,7 +200,17 @@ Only then inspect the source files needed for the task.
 
 Do not begin by loading broad unrelated parts of the repository. RepoLore exists to avoid that.
 
-## 7. Writing After Work
+When tools are available, prefer using:
+
+```text
+path
+context
+sparse-tree
+```
+
+instead of manually opening many files.
+
+## 10. Writing After Work
 
 Update RepoLore when a change affects operational memory.
 
@@ -166,7 +241,7 @@ A RepoLore update is usually not required for:
 
 When unsure, add a short useful note rather than leaving future agents without context.
 
-## 8. Where to Write Knowledge
+## 11. Where to Write Knowledge
 
 Write knowledge at the level where it is most useful.
 
@@ -174,22 +249,22 @@ Use higher-level files for broad context:
 
 ```text
 .repolore/root.md
-.repolore/tree/src.md
-.repolore/tree/apps.md
+.repolore/tree/src/src.md
+.repolore/tree/apps/apps.md
 ```
 
 Use mid-level files for subsystems, packages, services, domains, or important folders:
 
 ```text
-.repolore/tree/src/services.md
-.repolore/tree/packages/auth.md
+.repolore/tree/src/services/services.md
+.repolore/tree/packages/auth/auth.md
 ```
 
 Use file-level knowledge only when a specific file contains non-obvious behavior, important constraints, or unusual implementation details.
 
 Do not create rich file-level knowledge by default.
 
-## 9. What to Write
+## 12. What to Write
 
 Good RepoLore content includes:
 
@@ -216,60 +291,77 @@ Bad RepoLore content includes:
 
 Prefer concise operational knowledge.
 
-## 10. Empty Nodes
+## 13. Tools
 
-An empty RepoLore node is allowed.
+RepoLore tools are simple helper scripts.
 
-It means:
+They do not replace agent reasoning.
 
-> This path exists structurally, but no useful operational knowledge has been recorded here yet.
+They exist to make RepoLore easier to create, navigate, synchronize, and read.
 
-Do not fill empty nodes just to make the tree look complete.
+The alpha tools are described in:
 
-Fill a node only when the knowledge would help future agents or maintainers.
+```text
+.repolore/tools/tools.md
+```
 
-## 11. Existing Large Repositories
+The most important tools are:
+
+```text
+sync-tree
+sync-sparse-tree
+path
+context
+sparse-tree
+```
+
+Agents may run these tools through PowerShell or reimplement equivalent terminal commands when needed.
+
+## 14. Tool Invariants
+
+Agents write knowledge only to:
+
+```text
+.repolore/tree/
+```
+
+Agents do not manually edit:
+
+```text
+.repolore/sparse-tree/
+```
+
+After modifying `.repolore/tree/`, agents should regenerate `.repolore/sparse-tree/`.
+
+The sparse tree is a disposable cache.
+
+The complete tree is the editable knowledge mirror.
+
+## 15. Existing Large Repositories
 
 When initializing RepoLore in an existing large repository, do not try to document everything.
 
 Use this approach:
 
 1. create the RepoLore structure;
-2. generate a useful but imperfect `root.md`;
-3. identify major areas from existing docs, configs, folders, manifests, and naming conventions;
-4. add knowledge only for high-value areas;
-5. let RepoLore improve over time as real work touches the code.
+2. create a complete structural mirror under `.repolore/tree/`;
+3. generate a useful but imperfect `root.md`;
+4. identify major areas from existing docs, configs, folders, manifests, and naming conventions;
+5. add knowledge only for high-value areas;
+6. generate `.repolore/sparse-tree/`;
+7. let RepoLore improve over time as real work touches the code.
 
 The correct adoption model is:
 
 ```text
-broad structure, sparse knowledge, continuous enrichment
+complete structure, sparse knowledge, continuous enrichment
 ```
 
 Do not ask every owner to document everything from scratch.
 
 When a future change touches an area, improve the relevant RepoLore nodes as part of the change.
 
-## 12. Using Shell Commands Instead of RepoLore Tools
-
-If no RepoLore tool exists yet, agents may use terminal commands to inspect and maintain RepoLore.
-
-Useful operations include:
-
-* list repository files;
-* create a mirrored tree under `.repolore/tree/`;
-* find non-empty RepoLore files;
-* count approximate file sizes;
-* inspect changed files when change information is available;
-* compare repository paths with RepoLore paths.
-
-Agents may write small shell or PowerShell commands for these operations.
-
-Do not assume a dedicated RepoLore CLI exists.
-
-When creating scripts or commands, keep them simple, local, readable, and safe.
-
-## 13. Initialization Behavior
+## 16. Initialization Behavior
 
 When RepoLore is first added to a repository:
 
@@ -277,23 +369,13 @@ When RepoLore is first added to a repository:
 2. create `.repolore/root.md`;
 3. create or update the structural mirror under `.repolore/tree/`;
 4. add knowledge only where it is immediately useful;
-5. mark uncertainty explicitly;
-6. avoid pretending the repository is fully understood.
+5. generate `.repolore/sparse-tree/`;
+6. mark uncertainty explicitly;
+7. avoid pretending the repository is fully understood.
 
 The first version of RepoLore should be useful, not complete.
 
-## 14. Maintenance Rule
-
-RepoLore should evolve with the code.
-
-A meaningful code change should either:
-
-* update the relevant RepoLore knowledge; or
-* leave RepoLore unchanged because the change has no operational-memory impact.
-
-Do not let RepoLore become stale silently.
-
-## 15. Principle
+## 17. Principle
 
 Maintain RepoLore as the repository’s operational memory.
 
